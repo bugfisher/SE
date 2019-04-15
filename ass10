@@ -1,0 +1,107 @@
+#include <iostream>
+#include<stdio.h>
+using namespace std;
+#define ROW 7
+#define COL 7
+#define infi 5000
+
+class prims
+{
+   int graph[ROW][COL],nodes;
+   public:
+   prims();
+   void createGraph();
+   void primsAlgo(int *);
+};
+
+prims :: prims(){
+     for(int i=0;i<ROW;i++)
+     {
+       for(int j=0;j<COL;j++)
+       {
+     graph[i][j]=0;
+       }
+     }
+     nodes=0;
+
+}
+
+void prims :: createGraph(){
+    int i,j;
+    cout<<"Enter Total Nodes : ";
+    cin>>nodes;
+    cout<<"\n\nEnter Adjacency Matrix : \n";
+    for(i=0;i<nodes;i++)
+        for(j=0;j<nodes;j++)
+        cin>>graph[i][j];
+
+
+    for(i=0;i<nodes;i++)
+    {
+        for(j=0;j<nodes;j++)
+        {
+            if(graph[i][j]==0)
+            {
+            	graph[i][j]=99;
+            }
+        }
+    }
+
+
+
+
+        }
+
+
+
+void prims :: primsAlgo(int *min_weight){
+    int selected[ROW],i,j,ne,min,x,y;
+
+    for(i=0;i<nodes;i++)
+       selected[i]=false;
+
+    selected[0]=true;
+    ne=0;
+
+    while(ne <= nodes/2)
+    {
+       min=infi;
+
+       for(i=0;i<nodes;i++)
+       {
+          if(selected[i]==true)
+          {
+         for(j=0;j<nodes;j++)
+         {
+            if(selected[j]==false)
+            {
+               if(min > graph[i][j])
+               {
+               min=graph[i][j];
+               x=i;
+               y=j;
+               }
+            }
+         }
+          }
+       }
+       selected[y]=true;
+       cout<<"\n"<<x+1<<" --> "<<y+1;
+       *min_weight=*min_weight+min;
+       ne=ne+1;
+    }
+}
+
+int main(){
+    prims MST;
+    int min_weight=0;
+
+    cout<<"\nPrims Algorithm to find Minimum Spanning Tree\n";
+    MST.createGraph();
+    MST.primsAlgo(&min_weight);
+    cout<<endl<<endl;
+    cout<<"MINIMUM WEIGHT IS :"<<min_weight<<endl;
+    return 0;
+
+}
+
