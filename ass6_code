@@ -1,0 +1,350 @@
+//============================================================================
+// Name        : ass6.cpp
+// Author      :
+// Version     :
+// Copyright   : Your copyright notice
+// Description : Hello World in C++, Ansi-style
+//============================================================================
+
+
+#include <iostream>
+#include<string.h>
+#include<iomanip>
+#include"stack.h"
+#include<queue>
+using namespace std;
+
+struct user
+{
+	char name[30];
+	int day,month,year;
+	int friends;
+	int comments;
+};
+
+struct vertical_list
+{
+	int visited;
+	user *u;
+	vertical_list *down;
+	struct edge *side;
+};
+
+struct edge{
+	vertical_list * friend_user;
+	edge * next;
+};
+
+class social_media{
+	int count;
+	vertical_list *head;
+public:
+	social_media();
+	void getdata();
+	void display_list();
+	vertical_list * makelist(user* );
+	int make_friend(int ,vertical_list *);
+	void display();
+	void max_friends();
+	void get_birth(int );
+	void dfs(int );
+	void bfs();
+	void unvisited();
+};
+
+void social_media :: max_friends(){
+	struct vertical_list *temp = head;
+	int max = temp->u->friends;
+	while(temp!=NULL){
+		if(temp->u->friends > max){
+			max = temp->u->friends ;
+		}
+		temp = temp->down;
+	}
+	temp = head;
+	cout << " " ;
+	while(temp!=NULL){
+		if(temp->u->friends==max){
+			cout << temp->u->name << ", ";
+		}
+		temp = temp->down;
+	}
+	cout << " HAS MAXIMUM FRIENDS: (" << max << ") "<<endl<<endl ;
+}
+
+void social_media :: display(){
+	cout<<"THE USERS ARE AS FOLLOWING:"<<endl;
+	struct vertical_list *temp = head;
+	struct edge *temp2;
+	while(temp!=NULL){
+		temp2 = temp->side;
+		cout << temp->u->name  ;
+		while(temp2 != NULL){
+			cout << " -> " ;
+			cout <<"  "<< temp2->friend_user->u->name ;
+			temp2 = temp2->next;
+		}
+		temp = temp->down;
+		cout << endl;
+	}
+	cout<<endl;
+}
+
+social_media :: social_media(){
+	count = 0;
+	head = NULL;
+}
+
+void social_media :: getdata(){
+	int ch2=0,x=0;
+	user *u  = new (user);
+	vertical_list *l;
+	cout << "ENTER YOUR NAME: ";
+	cin.ignore();
+	cin.getline(u->name,30);
+	cout << "ENTER YOUR BIRTH-DATE: \n";
+	cout << "DATE : " ;
+	cin  >> u->day;
+	cout << "MONTH : ";
+	cin  >> u->month;
+	cout << "YEAR : ";
+	cin  >> u->year;
+	u->friends=0;
+
+		if(u->day<=0 || u->day>31 || u->month<=0 || u->month >12 || u->year >2018){
+					cout << "PLEASE ENTER VALID DATE OF BIRTH\n" ;
+					return;
+		}
+		else{
+			if(u->month == 2 && u->day >29){
+					cout << "PLEASE ENTER VALID DATE OF BIRTH\n";
+					return;
+			}
+			else{
+				l = makelist(u);
+				x++;
+			}
+		}
+		cout<<"YOU ARE ADDED SUCESSFULLY!"<<endl<<endl;
+
+		if(count!=0 && x!=0){
+			cout << "FRIENDS SUGGESTION :\n";
+			display_list();
+			cout << "PRESS 0 TO SKIP";
+			do{
+				cout << "\nCHOOSE OPTION: " ;
+				cin >> ch2;
+				if(ch2==0){
+					break;
+				}
+				if(ch2>count){
+					cout << "ENTER CHOICE " << endl;
+				}
+				else{
+
+					x = make_friend(ch2,l);
+					if(x==1){
+						cout << "YOU ARE NOW FRIENDS:)" << endl;
+						u->friends++;
+					}
+					else if(x==0){
+						cout << "YOU ARE ALREADY FRIENDS WITH THIS PERSON!" << endl;
+					}
+				}
+			}
+			while(1);
+		}
+		count ++;
+}
+
+vertical_list * social_media :: makelist(user *a){
+	struct vertical_list *p = new(struct vertical_list);
+	p->u = a;
+	p->down = NULL;
+	p->side = NULL;
+	if(head == NULL){
+		head = p;
+	}
+	else{
+		struct vertical_list  *temp = head;
+		while(temp->down != NULL){
+				temp = temp->down;
+		}
+		temp->down = p;
+	}
+	return p;
+}
+
+void social_media :: display_list(){
+	vertical_list *temp = head;
+	int i=1;
+	while(temp->down!= NULL){
+		cout << i  << ". "<< temp->u->name << endl ;
+		temp = temp->down;
+		i++;
+	}
+}
+
+int social_media :: make_friend(int x,vertical_list *a){
+	struct vertical_list *temp = head ;
+	struct edge *p = new(struct edge) ;
+	p->friend_user = a;
+	p->next = NULL;
+	while((x-1)!=0){
+		x--;
+		temp = temp->down;
+	}
+	if(temp ->side == NULL){
+
+		temp -> side = p;
+		return 1;
+	}
+	struct edge * q = temp->side,*r;
+
+	while(q!= NULL){
+
+		if(strcmp(q->friend_user->u->name,a->u->name)==0){
+			delete p;
+			return 0;
+		}
+		r = q;
+		q = q->next;
+	}
+	r->next = p;
+	return 1;
+}
+
+void social_media :: get_birth(int mon){
+	struct vertical_list *temp = head;
+	int c=1;
+	while(temp!=NULL){
+		if(temp->u->month == mon){
+			cout << c << ". " << temp->u->name << endl;
+			c++;
+		}
+		temp = temp->down;
+	}
+	if(c==1){
+		cout << "No-one in database has birthday in specified month i.e (" << mon << ")\n" ;
+	}
+}
+
+void social_media :: unvisited(){
+	struct vertical_list *temp = head;
+	while(temp!=NULL){
+		temp->visited = 0;
+		temp = temp->down;
+	}
+}
+
+void social_media :: dfs(int m){
+	stack_ll<vertical_list *> s;
+	int check=0;
+	vertical_list *p=head;
+	edge * q;
+	unvisited();
+	s.push(head);
+	while(s.isEmpty()){
+		p = s.pop();
+		q = p->side;
+		if(p->visited==0){
+			p->visited = 1;
+			if(m==p->u->month){
+			cout<< p->u->name << "\t" ;
+			check++;
+			}
+		}
+		while(q!=NULL){
+			if(q->friend_user->visited==0){
+			s.push(q->friend_user);
+			}
+			q = q->next;
+		}
+	}
+	if(check==0){
+		cout << "NO B'DAY FOUND" ;
+	}
+	else{
+		cout << "Has birthday in month " << m << endl;
+	}
+}
+
+void social_media :: bfs(){
+	unvisited();
+	queue<vertical_list *> q;
+	vertical_list * p = head;
+	int max = p->u->friends;
+	edge *e;
+	q.push(p);
+	while(!q.empty()){
+		p = q.front();
+		q.pop();
+		e = p->side;
+		if(p->visited==0){
+			p->visited = 1;
+			if(max<p->u->friends){
+				max = p->u->friends;
+			}
+		}
+		while(e!=NULL){
+			if(e->friend_user->visited==0){
+			q.push(e->friend_user);
+			}
+			e = e->next;
+		}
+	}
+	p = head;
+	cout << " " ;
+	while(p!=NULL){
+		if(p->u->friends==max){
+			cout << p->u->name << ", ";
+		}
+		p = p->down;
+	}
+	cout << " has maximum friends (" << max << ")" ;
+}
+
+int main() {
+	int ch,month;
+	social_media s;
+		do{
+			cout << "\#SOCIAL MEDIA#\n 1.REGISTER\n 2.DISPLAY USERS\n 3.USER POSSESING MAXIMUM FRIENDS\n 4.MAXIMUM AND MINIMUM COMMENTED USER";
+			cout << "\n 5.BIRTHDAY SEARCH\n 6.DFS TRAVERSAL FOR B'DAY\n 7.BFS TRAVERSAL(FOR MAXIMUM FRIENDS)\n 8.LOGOUT\n";
+			cin >> ch;
+			switch(ch){
+			case 1:
+				s.getdata();
+				break;
+			case 2:
+				s.display();
+				break;
+			case 3:
+				s.max_friends();
+				break;
+			case 4:
+				break;
+			case 5:
+				cout << "Enter the month : ";
+				cin >> month;
+				s.get_birth(month);
+				break;
+			case 6:
+
+				cout << "Enter the month : ";
+				cin >> month;
+				s.dfs(month);
+				break;
+			case 7:
+
+				s.bfs();
+				break;
+			case 8:
+				break;
+			default :
+				cout << "PLEASE ENTER VALID CHOICE " << endl;
+				break;
+			}
+		}
+		while(ch!=8);
+}
+
